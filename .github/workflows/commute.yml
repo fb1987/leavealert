@@ -21,6 +21,8 @@ permissions:
 jobs:
   commute:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,6 +34,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run commute alert
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           INPUT_BOOTSTRAP: ${{ github.event.inputs.bootstrap }}
           INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
