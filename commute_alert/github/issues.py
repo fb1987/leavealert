@@ -40,6 +40,30 @@ def create_issue(title: str, body: str) -> int:
     return response.json()["number"]
 
 
+def find_issue_number_by_title(title: str) -> Optional[int]:
+    normalized = title.strip().lower()
+    page = 1
+    while True:
+        response = requests.get(
+            _repo_api_url("/issues"),
+            headers=_get_headers(),
+            params={"state": "all", "per_page": 100, "page": page},
+            timeout=20,
+        )
+        if response.status_code != 200:
+            raise GitHubIssueError(f"Fetch issues failed: {response.text}")
+        issues = response.json()
+        if not issues:
+            return None
+        for issue in issues:
+            if "pull_request" in issue:
+                continue
+            issue_title = (issue.get("title") or "").strip().lower()
+            if issue_title == normalized:
+                return issue.get("number")
+        page += 1
+
+
 def get_issue_body(issue_number: int) -> str:
     response = requests.get(
         _repo_api_url(f"/issues/{issue_number}"),
