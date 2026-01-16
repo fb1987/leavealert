@@ -10,7 +10,7 @@ env:
 commute:
   name: "Work"
   enabled: true
-  days: ["mon", "tue", "wed", "thu", "fri"]
+  days: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
   arrival_time: "08:30"
   buffer_minutes: 10
   lead_minutes: 15
