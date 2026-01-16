@@ -19,7 +19,7 @@ commute:
 route:
   mode: "DRIVE"
   origin:
-    address: "375 King St W, Toronto, ON"
+    address: "79 Kent St N, Simcoe, ON"
   destination:
     address: "3080 Yonge St, Toronto, ON"
 
