@@ -28,12 +28,13 @@ def compute_route_duration(route: Dict[str, Any], api_key: str) -> dt.timedelta:
         "X-Goog-Api-Key": api_key,
         "X-Goog-FieldMask": "routes.duration,routes.travelAdvisory",
     }
+    departure_time = dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=1)
     payload = {
         "origin": _format_location(route["origin"]),
         "destination": _format_location(route["destination"]),
         "travelMode": route.get("mode", "DRIVE"),
         "routingPreference": "TRAFFIC_AWARE",
-        "departureTime": dt.datetime.utcnow().isoformat() + "Z",
+        "departureTime": departure_time.isoformat().replace("+00:00", "Z"),
     }
     if route.get("waypoints"):
         payload["intermediates"] = [
