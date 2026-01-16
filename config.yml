@@ -4,6 +4,9 @@ user:
   github_username: "fb1987"
   timezone: "America/Toronto"
 
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+
 commute:
   name: "Work"
   enabled: true
