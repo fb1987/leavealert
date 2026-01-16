@@ -38,6 +38,37 @@ def _compose_message(username: str, decision: Decision, eta_minutes: int, config
     )
 
 
+def _resolve_issue_number_by_title(title: str | None) -> int | None:
+    if not title:
+        return None
+    issue_number = issues.find_issue_number_by_title(title)
+    if not issue_number:
+        raise CommuteAlertError(f"Issue titled '{title}' not found.")
+    return issue_number
+
+
+def _resolve_alert_issue_number(config, state: dict) -> int:
+    issue_number = get_issue_number(config, state)
+    if issue_number:
+        return issue_number
+    issue_number = _resolve_issue_number_by_title(config.notifications.get("issue_title"))
+    if issue_number:
+        return issue_number
+    raise CommuteAlertError(
+        "Issue number missing. Run bootstrap or set notifications.issue_number/issue_title."
+    )
+
+
+def _resolve_state_issue_number(config, alert_issue_number: int) -> int:
+    state_issue_number = config.notifications.get("state_issue_number")
+    if state_issue_number:
+        return int(state_issue_number)
+    state_issue_number = _resolve_issue_number_by_title(config.notifications.get("state_issue_title"))
+    if state_issue_number:
+        return state_issue_number
+    return alert_issue_number
+
+
 def main() -> int:
     args = parse_args()
     bootstrap = args.bootstrap or _bool_env(os.getenv("INPUT_BOOTSTRAP"))
@@ -68,13 +99,10 @@ def main() -> int:
         print(f"Bootstrap complete. Issue #{issue_number} created.")
         return 0
 
-    issue_number = get_issue_number(config, state)
-    if not issue_number:
-        raise CommuteAlertError(
-            "Issue number missing. Run bootstrap or set notifications.issue_number."
-        )
+    alert_issue_number = _resolve_alert_issue_number(config, state)
+    state_issue_number = _resolve_state_issue_number(config, alert_issue_number)
 
-    issue_state = issues.load_state(issue_number)
+    issue_state = issues.load_state(state_issue_number)
     merged_state = {**state, **issue_state}
 
     now = get_now(config.user["timezone"])
@@ -96,7 +124,7 @@ def main() -> int:
         merged_state["last_error"] = None
     except Exception as exc:  # noqa: BLE001
         merged_state["last_error"] = str(exc)
-        issues.save_state(issue_number, merged_state)
+        issues.save_state(state_issue_number, merged_state)
         raise
 
     decision = decide_send(now, config.__dict__, travel_duration, merged_state)
@@ -114,13 +142,13 @@ def main() -> int:
             print("Dry run enabled. Would send comment:")
             print(comment)
         else:
-            issues.post_comment(issue_number, comment)
+            issues.post_comment(alert_issue_number, comment)
             merged_state["last_sent_date"] = now.date().isoformat()
             merged_state["last_sent_type"] = decision.send_type
 
     merged_state["last_computed_leave_by"] = decision.leave_by.isoformat()
     merged_state["last_run_at"] = now.isoformat()
-    issues.save_state(issue_number, merged_state)
+    issues.save_state(state_issue_number, merged_state)
     issues.save_local_state(STATE_PATH, merged_state)
 
     return 0

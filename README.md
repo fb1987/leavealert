@@ -13,7 +13,7 @@ Daily leave-by alerts via GitHub Actions + GitHub Mobile push notifications. Thi
 1. **Use this template** to create a new repo (private recommended).
 2. Add your route config in `config.yml` (see `docs/CONFIG_REFERENCE.md`).
 3. Add the GitHub secret `GOOGLE_MAPS_API_KEY`.
-4. Run the **Commute Alert** workflow with `bootstrap=true` to create the Issue.
+4. Run the **Commute Alert** workflow with `bootstrap=true` to create the Issue, or set `notifications.issue_title` to reference an existing Issue by title.
 5. Install **GitHub Mobile** and enable push notifications for direct mentions.
 
 ## Setup
@@ -31,6 +31,7 @@ Run **Actions → Commute Alert → Run workflow** with:
 - `bootstrap: true`
 
 The workflow creates a “Commute Alerts” Issue and stores the issue number in `.commute_alert_state.json`.
+If you prefer, set `notifications.issue_title` (and optionally `notifications.state_issue_title`) in `config.yml` to use existing Issues instead of bootstrapping.
 
 ### 5) Enable GitHub Mobile mentions
 See `docs/NOTIFICATIONS_GITHUB_MOBILE.md`.

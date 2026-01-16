@@ -31,6 +31,9 @@ route:
 notifications:
   channel: "github_mention"
   issue_number: null
+  issue_title: "alert"
+  state_issue_number: null
+  state_issue_title: "state"
   grace_minutes: 10
   leave_grace_minutes: 10
   quiet_hours:
@@ -41,4 +44,6 @@ notifications:
 
 ## Notes
 - `issue_number` can be null before bootstrap. The bootstrap workflow creates the Issue and stores the number in `.commute_alert_state.json`.
+- `issue_title` lets you reference an existing Issue by title instead of bootstrapping a new one.
+- `state_issue_number`/`state_issue_title` optionally store state in a separate Issue body. If omitted, state is stored on the alert Issue.
 - `days` must be lowercase three-letter abbreviations.
