@@ -16,6 +16,7 @@ commute:
   arrival_time: "08:30"
   buffer_minutes: 10
   lead_minutes: 15
+  estimated_duration_minutes: 35
 
 route:
   mode: "DRIVE"

@@ -7,7 +7,7 @@ from commute_alert.clock import get_now
 from commute_alert.config import get_issue_number, load_config
 from commute_alert.errors import CommuteAlertError
 from commute_alert.github import issues
-from commute_alert.logic import Decision, decide_send, should_run_today
+from commute_alert.logic import Decision, decide_send, should_fetch_eta, should_run_today
 from commute_alert.providers.google_routes import compute_route_duration
 
 STATE_PATH = ".commute_alert_state.json"
@@ -90,6 +90,7 @@ def main() -> int:
                 "last_computed_leave_by": None,
                 "last_eta_seconds": None,
                 "last_error": None,
+                "last_skip_reason": None,
                 "last_run_at": None,
             },
         )
@@ -112,6 +113,15 @@ def main() -> int:
 
     if not should_run_today(config.commute["days"], now):
         print("Today is not an active commute day; exiting.")
+        return 0
+
+    should_fetch, skip_reason = should_fetch_eta(now, config.__dict__, merged_state)
+    if not should_fetch:
+        print(skip_reason)
+        merged_state["last_skip_reason"] = skip_reason
+        merged_state["last_run_at"] = now.isoformat()
+        issues.save_state(state_issue_number, merged_state)
+        issues.save_local_state(STATE_PATH, merged_state)
         return 0
 
     api_key = os.getenv("GOOGLE_MAPS_API_KEY")
@@ -147,6 +157,7 @@ def main() -> int:
             merged_state["last_sent_type"] = decision.send_type
 
     merged_state["last_computed_leave_by"] = decision.leave_by.isoformat()
+    merged_state["last_skip_reason"] = None
     merged_state["last_run_at"] = now.isoformat()
     issues.save_state(state_issue_number, merged_state)
     issues.save_local_state(STATE_PATH, merged_state)
