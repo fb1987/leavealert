@@ -1,0 +1,40 @@
+name: Commute Alert
+
+on:
+  schedule:
+    - cron: "2-57/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      bootstrap:
+        description: "Create the Commute Alerts issue and store state"
+        required: false
+        default: "false"
+      dry_run:
+        description: "Run without posting a comment"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  commute:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run commute alert
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          INPUT_BOOTSTRAP: ${{ github.event.inputs.bootstrap }}
+          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          python -m commute_alert.main \
+            --config config.yml

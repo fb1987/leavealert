@@ -1,0 +1,30 @@
+version: 1
+
+user:
+  github_username: "yourhandle"
+  timezone: "America/Toronto"
+
+commute:
+  name: "Work"
+  enabled: true
+  days: ["mon", "tue", "wed", "thu", "fri"]
+  arrival_time: "08:30"
+  buffer_minutes: 10
+  lead_minutes: 15
+
+route:
+  mode: "DRIVE"
+  origin:
+    address: "123 Home St, City, Province"
+  destination:
+    address: "456 Office Ave, City, Province"
+
+notifications:
+  channel: "github_mention"
+  issue_number: null
+  grace_minutes: 10
+  leave_grace_minutes: 10
+  quiet_hours:
+    enabled: false
+    start: "22:00"
+    end: "06:00"
