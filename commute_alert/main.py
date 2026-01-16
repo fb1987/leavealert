@@ -9,6 +9,7 @@ from commute_alert.errors import CommuteAlertError
 from commute_alert.github import issues
 from commute_alert.logic import Decision, decide_send, should_fetch_eta, should_run_today
 from commute_alert.providers.google_routes import compute_route_duration
+from commute_alert.providers.google_weather import format_weather_summary, get_current_conditions
 
 STATE_PATH = ".commute_alert_state.json"
 
@@ -27,15 +28,24 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _compose_message(username: str, decision: Decision, eta_minutes: int, config) -> str:
+def _compose_message(
+    username: str,
+    decision: Decision,
+    eta_minutes: int,
+    config,
+    weather_summary: str | None,
+) -> str:
     commute = config["commute"]
     buffer = commute["buffer_minutes"]
     arrival = commute["arrival_time"]
     leave_by = decision.leave_by.strftime("%H:%M")
-    return (
+    message = (
         f"@{username} Leave by {leave_by} to arrive {arrival}. "
         f"ETA {eta_minutes}m (buffer {buffer}m)."
     )
+    if weather_summary:
+        message = f"{message} {weather_summary}"
+    return message
 
 
 def _resolve_issue_number_by_title(title: str | None) -> int | None:
@@ -147,7 +157,19 @@ def main() -> int:
     print(f"Decision: {decision.message}")
 
     if decision.send:
-        comment = _compose_message(config.user["github_username"], decision, eta_minutes, config.__dict__)
+        weather_summary = None
+        try:
+            weather = get_current_conditions(config.route["origin"], api_key)
+            weather_summary = format_weather_summary(weather)
+        except Exception as exc:  # noqa: BLE001
+            weather_summary = f"Weather unavailable ({exc})."
+        comment = _compose_message(
+            config.user["github_username"],
+            decision,
+            eta_minutes,
+            config.__dict__,
+            weather_summary,
+        )
         if dry_run:
             print("Dry run enabled. Would send comment:")
             print(comment)
