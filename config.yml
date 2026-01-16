@@ -1,7 +1,7 @@
 version: 1
 
 user:
-  github_username: "yourhandle"
+  github_username: "fb1987"
   timezone: "America/Toronto"
 
 commute:
@@ -15,9 +15,9 @@ commute:
 route:
   mode: "DRIVE"
   origin:
-    address: "123 Home St, City, Province"
+    address: "375 King St W, Toronto, ON"
   destination:
-    address: "456 Office Ave, City, Province"
+    address: "3080 Yonge St, Toronto, ON"
 
 notifications:
   channel: "github_mention"
