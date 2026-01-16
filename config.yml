@@ -21,9 +21,9 @@ route:
 
 notifications:
   channel: "github_mention"
-  issue_number: null
+  issue_number: 2
   issue_title: "alert"
-  state_issue_number: null
+  state_issue_number: 3
   state_issue_title: "state"
   grace_minutes: 10
   leave_grace_minutes: 10
